@@ -15,7 +15,9 @@ layout(std140, binding = 1) uniform CameraBlock {
 	float fov;
 } camera;
 
-const int MAX_STEPS = 3000;
+uniform sampler2D tex0;
+
+const int MAX_STEPS = 6000;
 float globalMass = 0.5;
 
 float atan2(in float y, in float x) {
@@ -209,23 +211,9 @@ vec3 marchRay(vec4 origin, vec4 direction) {
         if(length(p_cart.xz) < 2.0) {
             stepSize = max(ref_step * length(p_cart.xz) / 0.5, 0.0001);
         }
-        if (p_cart.z <= -wall) {
-            return vec3(0.0, 1.0, 0.0); //first wall
-        }
-        if (p_cart.x >= wall) {
-            return vec3(0.0, 0.0, 1.0); // Second wall
-        }
-        if (p_cart.x <= -wall) {
-            return vec3(1.0, 1.0, 0.0); // Third wall
-        }
-        if (p_cart.z >= wall) {
-            return vec3(0.0, 1.0, 1.0); // Wall behind the camera
-        }
-        if (p_cart.y <= -wall) {
-            return vec3(0.5, 0.0, 0.0); //floor
-        }
-        if (p_cart.y >= wall) {
-            return vec3(0.5, 0.5, 0.0); //ceiling
+        
+        if (p.x > 20) {
+            return textureLod(tex0, vec2(p.z / PI, p.y / PI), 0).xyz; // Inside the sphere
         }
         
         float rs = 2 * globalMass;
