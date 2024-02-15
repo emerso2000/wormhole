@@ -43,8 +43,8 @@ struct CameraData {
 } camera;
 
 void initialSetup() {
-	camera.cam_origin = glm::vec3(0, 0, -6.5);
-	camera.forward = glm::vec3(0.0f, 0.0f, -1.0f);
+	camera.cam_origin = glm::vec3(7, 0, 0);
+	camera.forward = glm::vec3(-1.0f, 0.0f, 0.0f);
 	camera.up = glm::vec3(0.0f, 1.0f, 0.0f);
 	camera.right = glm::cross(camera.forward, camera.up);
 	camera.fov = 0.4;
@@ -55,16 +55,16 @@ void processInput(GLFWwindow* window) {
 	const float rotationSpeed = 0.025f;
 
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		camera.cam_origin -= normalize(camera.forward) * cameraSpeed;
-	}
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
 		camera.cam_origin += normalize(camera.forward) * cameraSpeed;
 	}
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+		camera.cam_origin -= normalize(camera.forward) * cameraSpeed;
+	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		camera.cam_origin += glm::normalize(camera.right) * cameraSpeed;
+		camera.cam_origin -= glm::normalize(camera.right) * cameraSpeed;
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		camera.cam_origin -= glm::normalize(camera.right) * cameraSpeed;
+		camera.cam_origin += glm::normalize(camera.right) * cameraSpeed;
 	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
 		camera.forward = glm::rotate(camera.forward, rotationSpeed, camera.up);
@@ -156,10 +156,21 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		processInput(window);
-		std::cout << "Camera Origin: ("
-			<< camera.right.x << ", "
-			<< camera.right.y << ", "
-			<< camera.right.z << ")" << std::endl;
+
+		//std::cout << "Camera Origin: ("
+		//	<< camera.cam_origin.x << ", "
+		//	<< camera.cam_origin.y << ", "
+		//	<< camera.cam_origin.z << ")" << std::endl;
+
+		//std::cout << "Right vector: ("
+		//	<< camera.right.x << ", "
+		//	<< camera.right.y << ", "
+		//	<< camera.right.z << ")" << std::endl;
+
+		std::cout << "Forward vector: ("
+			<< camera.forward.x << ", "
+			<< camera.forward.y << ", "
+			<< camera.forward.z << ")" << std::endl;
 
 		computeProgram.Activate();
 		glDispatchCompute(std::ceil(SCREEN_WIDTH / 8), std::ceil(SCREEN_HEIGHT / 4), 1);
