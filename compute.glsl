@@ -21,37 +21,58 @@ float atan2(in float y, in float x) {
     return x == 0.0 ? sign(y)*PI/2 : atan(y, x);
 }
 
-vec3 cartesianToSpherical(vec3 cartesian) {
-    float radius = length(cartesian);
-    float theta = acos(cartesian.y / radius);
-    float phi = atan2(cartesian.z, cartesian.x);
-
-    return vec3(radius, theta, phi);
-}
-
-vec3 sphericalToCartesian(vec3 spherical) {
-    float x = spherical.x * sin(spherical.y) * cos(spherical.z);
-    float y = spherical.x * cos(spherical.y);
-    float z = spherical.x * sin(spherical.y) * sin(spherical.z);
-
-    return vec3(x, y, z);
-}
-
 vec3 cartesianToAzELR(vec3 cartesianVec, vec3 newRayOrigin) {
     float r = newRayOrigin.x;
     float th = newRayOrigin.y;
     float phi = newRayOrigin.z;
 
     mat3 transformationMatrix = mat3(
-        sin(th)*cos(phi),  sin(th)*sin(phi),  cos(th),
-        cos(th)*cos(phi),  cos(th)*sin(phi), -sin(th),
-        -sin(phi),  cos(phi),  0
+        sin(th) * cos(phi), sin(th) * sin(phi), cos(th),
+        cos(th) * cos(phi), cos(th) * sin(phi), -sin(th),
+        -sin(phi), cos(phi), 0.0
     );
-    
-    vec3 newVec = transformationMatrix * cartesianVec;
 
-    //return newVec.yzx;
+    mat3 transposeMatrix = transpose(transformationMatrix);
+
+    vec3 newVec = transposeMatrix * cartesianVec;
+
     return newVec;
+}
+
+vec3 AzELRToCartesian(vec3 sphericalVec, vec3 newRayOrigin) {
+    float r = newRayOrigin.x;
+    float th = newRayOrigin.y;
+    float phi = newRayOrigin.z;
+
+    mat3 transformationMatrix = mat3(
+        sin(th) * cos(phi), cos(th) * cos(phi), -sin(phi),
+        sin(th) * sin(phi), cos(th) * sin(phi), cos(phi),
+        cos(th), -sin(th), 0.0
+    );
+
+    vec3 newVec = transformationMatrix * sphericalVec;
+
+    return newVec;
+}
+
+vec3 cartesianToSpherical(vec3 cartesian) {
+    float radius = length(cartesian);
+    float theta = acos(cartesian.z / radius);
+    float phi = atan2(cartesian.y, cartesian.x);
+
+    return vec3(radius, theta, phi);
+}
+
+vec3 sphericalToCartesian(vec3 spherical) {
+    float r = spherical.x;
+    float theta = spherical.y;
+    float phi = spherical.z;
+
+    float x = r * sin(theta) * cos(phi);
+    float y = r * sin(theta) * sin(phi);
+    float z = r * cos(theta);
+
+    return vec3(x, y, z);
 }
 
 mat3 calculateChristoffelSymbolsAlphaR(vec3 position) {
@@ -179,6 +200,7 @@ void main() {
     vec2 uv = (vec2(pixel_coords) - 0.5 * dims.xy) / dims.y;
 
     vec3 ray_origin = camera.cam_origin;
+
     vec3 ray_direction = normalize(camera.forward * camera.fov + uv.x * camera.right + uv.y * camera.up); //directly incorporate the new rotated forward vector. 
 
     vec3 sphericalRayOrigin = cartesianToSpherical(ray_origin);
