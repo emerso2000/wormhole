@@ -10,6 +10,7 @@
 #include <glm/gtx/vector_angle.hpp>
 
 #include "shaderClass.h"
+#include "Texture.h"
 
 const unsigned int SCREEN_WIDTH = 800;
 const unsigned int SCREEN_HEIGHT = 800;
@@ -114,6 +115,12 @@ int main() {
 
 	GLuint shaderprogramID = shaderProgram.ID;
 
+	Texture galaxyBackground("C:\\Users\\ethan\\source\\repos\\Wormhole\\Wormhole\\textures\\background.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
+	galaxyBackground.texUnit(computeProgram, "tex0", 0);
+	
+	Texture milkywayBackground("C:\\Users\\ethan\\source\\repos\\Wormhole\\Wormhole\\textures\\milkyway.png", GL_TEXTURE_2D, GL_TEXTURE0 + 1, GL_RGBA, GL_UNSIGNED_BYTE);
+	milkywayBackground.texUnit(computeProgram, "tex1", 1);
+
 	GLuint VAO, VBO, EBO;
 	glCreateVertexArrays(1, &VAO);
 	glCreateBuffers(1, &VBO);
@@ -155,22 +162,28 @@ int main() {
 		glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		glActiveTexture(GL_TEXTURE0);
+		galaxyBackground.Bind();
+
+		glActiveTexture(GL_TEXTURE1); //have to specify the texture, not sure why
+		milkywayBackground.Bind();
+
 		processInput(window);
 
-		//std::cout << "Camera Origin: ("
-		//	<< camera.cam_origin.x << ", "
-		//	<< camera.cam_origin.y << ", "
-		//	<< camera.cam_origin.z << ")" << std::endl;
+		std::cout << "Camera Origin: ("
+			<< camera.cam_origin.x << ", "
+			<< camera.cam_origin.y << ", "
+			<< camera.cam_origin.z << ")" << std::endl;
 
 		//std::cout << "Right vector: ("
 		//	<< camera.right.x << ", "
 		//	<< camera.right.y << ", "
 		//	<< camera.right.z << ")" << std::endl;
 
-		std::cout << "Forward vector: ("
-			<< camera.forward.x << ", "
-			<< camera.forward.y << ", "
-			<< camera.forward.z << ")" << std::endl;
+		//std::cout << "Forward vector: ("
+		//	<< camera.forward.x << ", "
+		//	<< camera.forward.y << ", "
+		//	<< camera.forward.z << ")" << std::endl;
 
 		computeProgram.Activate();
 		glDispatchCompute(std::ceil(SCREEN_WIDTH / 8), std::ceil(SCREEN_HEIGHT / 4), 1);
@@ -190,6 +203,9 @@ int main() {
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+
+	galaxyBackground.Unbind();
+	milkywayBackground.Unbind();
 
 	shaderProgram.Delete();
 	computeProgram.Delete();
