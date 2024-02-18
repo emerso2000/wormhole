@@ -16,9 +16,11 @@ layout(std140, binding = 1) uniform CameraBlock {
 } camera;
 
 uniform sampler2D tex0;
+uniform sampler2D tex1;
 
 const int MAX_STEPS = 6000;
 float globalMass = 0.5;
+float b = 2.0; //throat radius of worm hole
 
 float atan2(in float y, in float x) {
     return x == 0.0 ? sign(y)*PI/2 : atan(y, x);
@@ -72,25 +74,25 @@ mat4 calculateChristoffelSymbolsAlphaR(vec4 position) {
 
     float rs = 2 * globalMass; // Schwarzschild radius
 
-    christoffelSymbols_alpha_r[0][0] = -rs /((2.0 * r) * (r - rs));
+    christoffelSymbols_alpha_r[0][0] = 0.0;
     christoffelSymbols_alpha_r[0][1] = 0.0;
     christoffelSymbols_alpha_r[0][2] = 0.0;
     christoffelSymbols_alpha_r[0][3] = 0.0;
 
     christoffelSymbols_alpha_r[1][0] = 0.0;
-    christoffelSymbols_alpha_r[1][1] = rs - r;
+    christoffelSymbols_alpha_r[1][1] = -r;
     christoffelSymbols_alpha_r[1][2] = 0.0;
     christoffelSymbols_alpha_r[1][3] = 0.0;
 
     christoffelSymbols_alpha_r[2][0] = 0.0;
     christoffelSymbols_alpha_r[2][1] = 0.0;
-    christoffelSymbols_alpha_r[2][2] = (rs - r) * sin(theta) * sin(theta);
+    christoffelSymbols_alpha_r[2][2] = -r * sin(theta) * sin(theta);
     christoffelSymbols_alpha_r[2][3] = 0.0;
 
     christoffelSymbols_alpha_r[3][0] = 0.0;
     christoffelSymbols_alpha_r[3][1] = 0.0;
     christoffelSymbols_alpha_r[3][2] = 0.0;
-    christoffelSymbols_alpha_r[3][3] = (rs * (r - rs)) / (2.0 * r * r * r);
+    christoffelSymbols_alpha_r[3][3] = 0.0;
     
     return christoffelSymbols_alpha_r;
 }
@@ -103,14 +105,12 @@ mat4 calculateChristoffelSymbolsAlphaTheta(vec4 position) {
 
     mat4 christoffelSymbols_alpha_theta;
 
-    float rs = 2 * globalMass; // Schwarzschild radius
-
     christoffelSymbols_alpha_theta[0][0] = 0.0;
-    christoffelSymbols_alpha_theta[0][1] = 1.0 / r;
+    christoffelSymbols_alpha_theta[0][1] = r / ((b * b) + (r * r));
     christoffelSymbols_alpha_theta[0][2] = 0.0;
     christoffelSymbols_alpha_theta[0][3] = 0.0;
 
-    christoffelSymbols_alpha_theta[1][0] = 1.0 / r;
+    christoffelSymbols_alpha_theta[1][0] = r / ((b * b) + (r * r));
     christoffelSymbols_alpha_theta[1][1] = 0.0;
     christoffelSymbols_alpha_theta[1][2] = 0.0;
     christoffelSymbols_alpha_theta[1][3] = 0.0;
@@ -136,20 +136,18 @@ mat4 calculateChristoffelSymbolsAlphaPhi(vec4 position) {
 
     mat4 christoffelSymbols_alpha_phi;
 
-    float rs = 2 * globalMass; // Schwarzschild radius
-
     christoffelSymbols_alpha_phi[0][0] = 0.0;
     christoffelSymbols_alpha_phi[0][1] = 0.0;
-    christoffelSymbols_alpha_phi[0][2] = 1.0 / r;
+    christoffelSymbols_alpha_phi[0][2] = r / ((b * b) + (r * r));
     christoffelSymbols_alpha_phi[0][3] = 0.0;
 
     christoffelSymbols_alpha_phi[1][0] = 0.0;
     christoffelSymbols_alpha_phi[1][1] = 0.0;
-    christoffelSymbols_alpha_phi[1][2] = 1.0 / tan(theta);
+    christoffelSymbols_alpha_phi[1][2] = 1 / tan(theta);
     christoffelSymbols_alpha_phi[1][3] = 0.0;
 
-    christoffelSymbols_alpha_phi[2][0] = 1.0 / r;
-    christoffelSymbols_alpha_phi[2][1] = 1.0 / tan(theta);
+    christoffelSymbols_alpha_phi[2][0] = r / ((b * b) + (r * r));
+    christoffelSymbols_alpha_phi[2][1] = 1 / tan(theta);
     christoffelSymbols_alpha_phi[2][2] = 0.0;
     christoffelSymbols_alpha_phi[2][3] = 0.0;
 
@@ -169,12 +167,10 @@ mat4 calculateChristoffelSymbolsAlphaTime(vec4 position) {
 
     mat4 christoffelSymbols_alpha_time;
 
-    float rs = 2 * globalMass; // Schwarzschild radius
-
     christoffelSymbols_alpha_time[0][0] = 0.0;
     christoffelSymbols_alpha_time[0][1] = 0.0;
     christoffelSymbols_alpha_time[0][2] = 0.0;
-    christoffelSymbols_alpha_time[0][3] = rs /((2.0 * r) * (r - rs));
+    christoffelSymbols_alpha_time[0][3] = 0.0;
 
     christoffelSymbols_alpha_time[1][0] = 0.0;
     christoffelSymbols_alpha_time[1][1] = 0.0;
@@ -186,7 +182,7 @@ mat4 calculateChristoffelSymbolsAlphaTime(vec4 position) {
     christoffelSymbols_alpha_time[2][2] = 0.0;
     christoffelSymbols_alpha_time[2][3] = 0.0;
 
-    christoffelSymbols_alpha_time[3][0] = rs /((2.0 * r) * (r - rs));
+    christoffelSymbols_alpha_time[3][0] = 0.0;
     christoffelSymbols_alpha_time[3][1] = 0.0;
     christoffelSymbols_alpha_time[3][2] = 0.0;
     christoffelSymbols_alpha_time[3][3] = 0.0;
@@ -215,11 +211,10 @@ vec3 marchRay(vec4 origin, vec4 direction) {
         if (p.x > 20) {
             return textureLod(tex0, vec2(p.z / PI, p.y / PI), 0).xyz; // Inside the sphere
         }
-        
-        float rs = 2 * globalMass;
 
-        if (p.x < rs * 1.001) {
-            return vec3(0.0, 0.0, 0.0); //event horizon!!
+        if (p.x < 0) {
+            //return vec3(1, 0 ,0);
+            return textureLod(tex1, vec2(p.z / PI, p.y / PI), 0).xyz;
         }
 
         mat4 christoffelSymbols_alpha_r = calculateChristoffelSymbolsAlphaR(p);
@@ -252,17 +247,16 @@ void main() {
 
     vec3 sphericalRo = cartesianToSpherical(ray_origin);
     vec3 sphericalRd = cartesianToAzELR(ray_direction, sphericalRo);
-
-    vec4 schwarzschildRd = vec4(sphericalRd, -1.0);
-    vec4 schwarzschildRo = vec4(sphericalRo, 0.0);
     
-    float m = globalMass;
+    vec4 ellisRd = vec4(sphericalRd, -1.0);
+    vec4 ellisRo = vec4(sphericalRo, 0.0);
+
     float r = sphericalRo.x; //initial position
 
-    float e0 = 1.0 / sqrt(1.0 - 2.0 * m / r); //time
-    float e1 = sqrt(1.0 - 2.0 * m / r); //r
-    float e2 = (1.0 / r); //theta
-    float e3 = 1.0 / (r * sin(sphericalRo.y)); //phi
+    float e0 = 1.0; //time
+    float e1 = 1.0; //r
+    float e2 = 1.0 / sqrt((b * b) + (sphericalRo.x * sphericalRo.x)); //theta
+    float e3 = 1.0 / (sqrt((b * b) + (sphericalRo.x * sphericalRo.x)) * sin(sphericalRo.y)); //phi
 
     //in order of (r, theta, phi, ct)
     mat4 tetradMatrix = mat4(
@@ -271,12 +265,10 @@ void main() {
         0, 0, e3, 0,
         0, 0, 0, e0
     );    
-
-    mat4 inverseTetradMatrix = inverse(tetradMatrix);
     
-    schwarzschildRd = schwarzschildRd * tetradMatrix; //transform to true schwarzschild coordinates
+    ellisRd = ellisRd * tetradMatrix; //transform to true ellis coordinates
 
-    vec3 color = marchRay(schwarzschildRo, schwarzschildRd);
+    vec3 color = marchRay(ellisRo, ellisRd);
 
     pixel = vec4(color, 1.0);
     
